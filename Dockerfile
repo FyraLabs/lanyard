@@ -22,6 +22,7 @@ FROM elixir:1.12.3-alpine
 
 RUN apk add redis
 
+
 COPY --from=build /app/_build/prod/rel/lanyard /opt/lanyard
 
 CMD [ "/opt/lanyard/bin/lanyard", "start" ]
