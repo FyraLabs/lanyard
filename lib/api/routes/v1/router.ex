@@ -1,6 +1,4 @@
 defmodule Lanyard.Api.Routes.V1 do
-  import Plug.Conn
-
   alias Lanyard.Api.Util
   alias Lanyard.Api.Routes.V1.Users
 

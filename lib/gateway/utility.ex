@@ -1,5 +1,5 @@
 defmodule Lanyard.Gateway.Utility do
-  @spec normalize_atom(atom) :: String.t()
+  @spec normalize_atom(atom) :: atom()
   def normalize_atom(atom) do
     atom |> Atom.to_string() |> String.downcase() |> String.to_atom()
   end
@@ -23,11 +23,11 @@ defmodule Lanyard.Gateway.Utility do
     load
     |> _update_payload(seq_num, "s", seq_num)
     |> _update_payload(event_name, "t", seq_num)
-    |> Poison.encode!()
+    |> Jason.encode!()
   end
 
   @doc "Decode binary payload received from discord into a map"
-  @spec payload_decode(list, {atom, binary}) :: map
+  @spec payload_decode(list(), {:binary, binary()}) :: map
   def payload_decode(codes, {:binary, payload}) do
     payload = :erlang.binary_to_term(payload)
 
@@ -40,9 +40,9 @@ defmodule Lanyard.Gateway.Utility do
   end
 
   @doc "Decode json payload received from discord into a map"
-  @spec payload_decode(list, {atom, binary}) :: map
+  @spec payload_decode(list(), {:text, binary()}) :: map
   def payload_decode(codes, {:text, payload}) do
-    payload = Poison.decode!(payload)
+    payload = Jason.decode!(payload)
 
     %{
       op: opcode(codes, payload[:op] || payload["op"]),

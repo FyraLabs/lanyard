@@ -1,6 +1,4 @@
 defmodule Lanyard.Api.Routes.V1.Users do
-  import Plug.Conn
-
   alias Lanyard.Api.Util
   alias Lanyard.Presence
   alias Lanyard.Connectivity.Redis
@@ -9,6 +7,18 @@ defmodule Lanyard.Api.Routes.V1.Users do
 
   plug(:match)
   plug(:dispatch)
+
+  get "/@me" do
+    key = conn |> Plug.Conn.get_req_header("authorization")
+
+    case Redis.get("api_key:#{key}") do
+      user_id when is_binary(user_id) ->
+        Util.respond(conn, Presence.get_pretty_presence(user_id))
+
+      _ ->
+        Util.no_permission(conn)
+    end
+  end
 
   get "/:id" do
     %Plug.Conn{params: %{"id" => user_id}} = conn
@@ -24,7 +34,7 @@ defmodule Lanyard.Api.Routes.V1.Users do
     case validate_resource_access(conn) do
       :ok ->
         try do
-          {:ok, parsed} = Poison.decode(body)
+          {:ok, parsed} = Jason.decode(body)
 
           Enum.each(parsed, fn {k, v} ->
             with {:error, _reason} = err <- Lanyard.KV.Interface.validate_pair({k, v}) do
